@@ -12,6 +12,10 @@ BarWidget {
   readonly property var hostWindow: root.QsWindow ? root.QsWindow.window : null
   readonly property string hostScreenName: hostWindow && hostWindow.screen
     ? String(hostWindow.screen.name || "") : ""
+  readonly property var favoriteGradientNames: [
+    "Moonlit Asteroid", "Deep Space", "Atlas",
+    "Mango Pulp", "Royal", "Purple Paradise"
+  ]
   readonly property var colorPalette: [
     String(Color.background), String(Color.foreground), String(Color.accent),
     String(Color.urgent), String(Color.muted),
@@ -118,10 +122,20 @@ BarWidget {
             readonly property string assignmentLabel: {
               if (!assignment) return "Using Omarchy default"
               if (assignment.type === "color") return assignment.color
+              if (assignment.type === "gradient") return assignment.name + " · " + assignment.angle + "°"
               var parts = String(assignment.path || "").split("/")
               return parts.length ? parts[parts.length - 1] : "Wallpaper"
             }
             property bool colorEditorOpen: false
+            property bool gradientEditorOpen: false
+            property string selectedGradientName: root.favoriteGradientNames[0]
+
+            function applySelectedGradient() {
+              var angle = Number(gradientAngleInput.text)
+              if (!isFinite(angle)) return
+              if (root.omosaicService)
+                root.omosaicService.setGradientForKey(screenKey, selectedGradientName, angle)
+            }
 
             function applyHexColor() {
               var color = Model.normalizeColor(hexInput.text)
@@ -133,6 +147,14 @@ BarWidget {
               if (colorEditorOpen)
                 hexInput.text = assignment && assignment.type === "color"
                   ? assignment.color : "#"
+            }
+
+            onGradientEditorOpenChanged: {
+              if (!gradientEditorOpen) return
+              selectedGradientName = assignment && assignment.type === "gradient"
+                ? assignment.name : root.favoriteGradientNames[0]
+              gradientAngleInput.text = String(assignment && assignment.type === "gradient"
+                ? assignment.angle : 0)
             }
 
             width: displayList.width
@@ -186,17 +208,20 @@ BarWidget {
                 }
               }
 
-              Row {
+              Grid {
                 id: actions
                 width: parent.width
-                spacing: Style.space(6)
+                columns: 3
+                columnSpacing: Style.space(6)
+                rowSpacing: Style.space(6)
 
                 ActionButton {
-                  width: (actions.width - actions.spacing * 2) / 3
-                  label: "Wallpaper"
+                  width: (actions.width - actions.columnSpacing * 2) / 3
+                  label: "Themes"
                   fontFamily: root.bar.fontFamily
                   onActivated: {
                     displayCard.colorEditorOpen = false
+                    displayCard.gradientEditorOpen = false
                     root.popupOpen = false
                     if (root.omosaicService)
                       root.omosaicService.chooseImageForKey(displayCard.screenKey)
@@ -204,19 +229,46 @@ BarWidget {
                 }
 
                 ActionButton {
-                  width: (actions.width - actions.spacing * 2) / 3
-                  label: "Solid color"
+                  width: (actions.width - actions.columnSpacing * 2) / 3
+                  label: "File"
                   fontFamily: root.bar.fontFamily
-                  onActivated: displayCard.colorEditorOpen = !displayCard.colorEditorOpen
+                  onActivated: {
+                    displayCard.colorEditorOpen = false
+                    displayCard.gradientEditorOpen = false
+                    root.popupOpen = false
+                    if (root.omosaicService)
+                      root.omosaicService.chooseFileForKey(displayCard.screenKey)
+                  }
                 }
 
                 ActionButton {
-                  width: (actions.width - actions.spacing * 2) / 3
+                  width: (actions.width - actions.columnSpacing * 2) / 3
+                  label: "Solid color"
+                  fontFamily: root.bar.fontFamily
+                  onActivated: {
+                    displayCard.gradientEditorOpen = false
+                    displayCard.colorEditorOpen = !displayCard.colorEditorOpen
+                  }
+                }
+
+                ActionButton {
+                  width: (actions.width - actions.columnSpacing * 2) / 3
+                  label: "Gradient"
+                  fontFamily: root.bar.fontFamily
+                  onActivated: {
+                    displayCard.colorEditorOpen = false
+                    displayCard.gradientEditorOpen = !displayCard.gradientEditorOpen
+                  }
+                }
+
+                ActionButton {
+                  width: (actions.width - actions.columnSpacing * 2) / 3
                   label: "Reset"
                   fontFamily: root.bar.fontFamily
                   available: displayCard.assignment !== null
                   onActivated: {
                     displayCard.colorEditorOpen = false
+                    displayCard.gradientEditorOpen = false
                     if (root.omosaicService)
                       root.omosaicService.clearAssignment(displayCard.screenKey)
                   }
@@ -300,6 +352,142 @@ BarWidget {
                     available: Model.normalizeColor(hexInput.text) !== ""
                     onActivated: displayCard.applyHexColor()
                   }
+                }
+              }
+
+              Column {
+                id: gradientEditor
+                width: parent.width
+                spacing: Style.space(8)
+                visible: displayCard.gradientEditorOpen
+
+                Grid {
+                  width: parent.width
+                  columns: 3
+                  columnSpacing: Style.space(7)
+                  rowSpacing: Style.space(7)
+
+                  Repeater {
+                    model: root.favoriteGradientNames
+
+                    Rectangle {
+                      id: gradientPreset
+                      required property var modelData
+                      readonly property var preset: root.omosaicService
+                        ? root.omosaicService.gradientByName(String(modelData)) : null
+                      width: (gradientEditor.width - Style.space(14)) / 3
+                      height: Style.space(48)
+                      radius: Style.cornerRadius > 0 ? Style.space(5) : 0
+                      clip: true
+                      border.width: displayCard.selectedGradientName === String(modelData) ? 3 : 1
+                      border.color: border.width === 3
+                        ? Color.foreground : Util.alpha(Color.foreground, 0.25)
+
+                      GradientSurface {
+                        anchors.fill: parent
+                        colors: gradientPreset.preset ? gradientPreset.preset.colors : []
+                        angle: Number(gradientAngleInput.text || 0)
+                      }
+
+                      Rectangle {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        height: Style.space(18)
+                        color: Util.alpha(Color.background, 0.72)
+
+                        Text {
+                          anchors.fill: parent
+                          horizontalAlignment: Text.AlignHCenter
+                          verticalAlignment: Text.AlignVCenter
+                          text: String(gradientPreset.modelData)
+                          color: Color.foreground
+                          font.family: root.bar.fontFamily
+                          font.pixelSize: Style.font.caption
+                          elide: Text.ElideRight
+                        }
+                      }
+
+                      MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                          displayCard.selectedGradientName = String(gradientPreset.modelData)
+                          displayCard.applySelectedGradient()
+                        }
+                      }
+                    }
+                  }
+                }
+
+                Text {
+                  width: parent.width
+                  text: displayCard.selectedGradientName
+                  color: Util.alpha(Color.foreground, 0.7)
+                  font.family: root.bar.fontFamily
+                  font.pixelSize: Style.font.caption
+                  elide: Text.ElideRight
+                }
+
+                Row {
+                  width: parent.width
+                  spacing: Style.space(7)
+
+                  ActionButton {
+                    width: parent.width - angleInputBox.width - applyGradient.width - parent.spacing * 2
+                    label: "All 382 gradients…"
+                    fontFamily: root.bar.fontFamily
+                    onActivated: {
+                      displayCard.gradientEditorOpen = false
+                      root.popupOpen = false
+                      if (root.omosaicService)
+                        root.omosaicService.chooseGradientForKey(displayCard.screenKey, Number(gradientAngleInput.text || 0))
+                    }
+                  }
+
+                  Rectangle {
+                    id: angleInputBox
+                    width: Style.space(78)
+                    height: Style.space(28)
+                    radius: Style.cornerRadius > 0 ? height / 4 : 0
+                    color: Util.alpha(Color.foreground, 0.06)
+                    border.width: 1
+                    border.color: Util.alpha(Color.foreground, 0.22)
+
+                    TextInput {
+                      id: gradientAngleInput
+                      anchors.fill: parent
+                      anchors.leftMargin: Style.space(8)
+                      anchors.rightMargin: Style.space(8)
+                      verticalAlignment: TextInput.AlignVCenter
+                      horizontalAlignment: TextInput.AlignHCenter
+                      color: Color.foreground
+                      selectionColor: Color.accent
+                      selectedTextColor: Color.background
+                      font.family: root.bar.fontFamily
+                      font.pixelSize: Style.font.body
+                      selectByMouse: true
+                      maximumLength: 7
+                      onAccepted: displayCard.applySelectedGradient()
+                    }
+                  }
+
+                  ActionButton {
+                    id: applyGradient
+                    width: Style.space(62)
+                    label: "Apply"
+                    fontFamily: root.bar.fontFamily
+                    available: gradientAngleInput.text !== "" && isFinite(Number(gradientAngleInput.text))
+                    onActivated: displayCard.applySelectedGradient()
+                  }
+                }
+
+                Text {
+                  text: "Angle: 0° is left → right; any positive or negative value is accepted."
+                  color: Util.alpha(Color.foreground, 0.55)
+                  font.family: root.bar.fontFamily
+                  font.pixelSize: Style.font.caption
                 }
               }
             }

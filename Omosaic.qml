@@ -5,6 +5,7 @@ import QtQuick
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
+import "Gradients.js" as Gradients
 
 Item {
   id: root
@@ -16,8 +17,12 @@ Item {
 
   property var configState: Model.emptyState()
   property var monitorLayout: []
+  readonly property var gradientPresets: Gradients.gradients
   property string defaultBackground: ""
   property string pickerScreenKey: ""
+  property string filePickerScreenKey: ""
+  property string gradientPickerScreenKey: ""
+  property real gradientPickerAngle: 0
 
   function keysForScreen(screen) {
     return Model.screenKeys(screen.name, screen.manufacturer, screen.model, screen.serialNumber)
@@ -78,6 +83,38 @@ Item {
     return setAssignment(screenKey, { type: "color", color: color })
   }
 
+  function gradientByName(name) {
+    return Gradients.byName(String(name || ""))
+  }
+
+  function setGradientForKey(screenKey, name, angle) {
+    var preset = gradientByName(name)
+    if (!preset) return false
+    return setAssignment(screenKey, {
+      type: "gradient",
+      name: preset.name,
+      colors: preset.colors,
+      angle: angle
+    })
+  }
+
+  function chooseGradientForKey(screenKey, angle) {
+    if (gradientPicker.running) return
+    gradientPickerScreenKey = String(screenKey || "").trim()
+    gradientPickerAngle = Number(angle || 0)
+    if (!gradientPickerScreenKey) return
+    var command = ["omarchy-menu-select", "Gradient"]
+    for (var i = 0; i < gradientPresets.length; i++) command.push(gradientPresets[i].name)
+    gradientPicker.command = command
+    gradientPicker.running = true
+  }
+
+  function chooseFileForKey(screenKey) {
+    if (filePicker.running) return
+    filePickerScreenKey = String(screenKey || "").trim()
+    if (filePickerScreenKey) filePicker.running = true
+  }
+
   Process {
     id: prepareStateDirectory
     command: ["mkdir", "-p", root.stateDirectory]
@@ -92,6 +129,29 @@ Item {
     onLoaded: root.configState = Model.parseState(text())
     onLoadFailed: root.configState = Model.emptyState()
     onFileChanged: reload()
+  }
+
+  Process {
+    id: filePicker
+    command: ["bash", "-lc", '\n      roots=()\n      [[ -d "$HOME/Pictures" ]] && roots+=("$HOME/Pictures")\n      [[ -d "$HOME/Downloads" ]] && roots+=("$HOME/Downloads")\n      (( ${#roots[@]} )) || roots+=("$HOME")\n      paths=$(IFS=:; printf "%s" "${roots[*]}")\n      omarchy-menu-file "Select wallpaper" "$paths" "jpg jpeg png gif bmp webp" --width 800\n    ']
+    stdout: StdioCollector {
+      onStreamFinished: {
+        var path = String(text || "").trim()
+        if (path && root.filePickerScreenKey)
+          root.setAssignment(root.filePickerScreenKey, { type: "image", path: path })
+      }
+    }
+  }
+
+  Process {
+    id: gradientPicker
+    stdout: StdioCollector {
+      onStreamFinished: {
+        var name = String(text || "").trim()
+        if (name && root.gradientPickerScreenKey)
+          root.setGradientForKey(root.gradientPickerScreenKey, name, root.gradientPickerAngle)
+      }
+    }
   }
 
   Process {
@@ -200,6 +260,7 @@ Item {
 
       property var assignment: root.assignmentForScreen(modelData)
       property bool solid: assignment && assignment.type === "color"
+      property bool gradientSurface: assignment && assignment.type === "gradient"
       property string imagePath: assignment && assignment.type === "image"
         ? assignment.path : root.defaultBackground
 
@@ -218,9 +279,16 @@ Item {
         color: panel.solid ? panel.assignment.color : "#000000"
       }
 
+      GradientSurface {
+        anchors.fill: parent
+        visible: panel.gradientSurface
+        colors: panel.gradientSurface ? panel.assignment.colors : []
+        angle: panel.gradientSurface ? panel.assignment.angle : 0
+      }
+
       Image {
         anchors.fill: parent
-        visible: !panel.solid && panel.imagePath !== ""
+        visible: !panel.solid && !panel.gradientSurface && panel.imagePath !== ""
         source: visible ? Util.fileUrl(panel.imagePath) : ""
         fillMode: Image.PreserveAspectCrop
         asynchronous: true

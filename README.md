@@ -11,7 +11,9 @@ Omosaic is a multi-display wallpaper service for the Omarchy Quattro shell. It r
 - Manage every connected display from an Omarchy bar widget.
 - Assign a different image to each connected display.
 - Browse backgrounds from every installed stock and user theme.
+- Pick custom image files outside the Omarchy theme library.
 - Assign solid colors, including custom hex colors.
+- Use any of the 382 uiGradients presets with a custom angle.
 - Remember displays by manufacturer, model, and serial number when available.
 - Fall back to the connector name and Omarchy's current global background.
 - React to monitor hotplug through `Quickshell.screens`.
@@ -28,8 +30,10 @@ Plugins run as unsandboxed code inside `omarchy-shell`. Review third-party plugi
 
 Click the **Omosaic** icon in the Omarchy bar. Its panel lists every connected display with three actions:
 
-- **Wallpaper** browses backgrounds from all installed Omarchy themes.
+- **Themes** browses backgrounds from all installed Omarchy themes.
+- **File** selects an image from your Pictures or Downloads folders.
 - **Solid color** offers presets and custom hex colors.
+- **Gradient** offers visual presets, all 382 searchable uiGradients, and a custom angle.
 - **Reset** returns that display to Omarchy's global background.
 
 Assignments are stored in:
@@ -79,4 +83,4 @@ omarchy plugin validate .
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). Gradient names and colors are sourced from the MIT-licensed [uiGradients](https://uigradients.com/) project; see [third-party notices](THIRD_PARTY_NOTICES.md).

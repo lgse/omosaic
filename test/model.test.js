@@ -3,6 +3,7 @@ const assert = require("node:assert/strict")
 const fs = require("node:fs")
 const path = require("node:path")
 const Model = require("../Model.js")
+const Gradients = require("../Gradients.js")
 
 const root = path.resolve(__dirname, "..")
 
@@ -29,6 +30,25 @@ test("Hyprland monitor layout uses logical dimensions and rotation", () => {
     { name: "DP-4", x: 0, y: 0, width: 1600, height: 900 },
     { name: "DP-5", x: 1600, y: 338, width: 900, height: 1600 }
   ])
+})
+
+test("uiGradients catalog is complete and searchable", () => {
+  assert.equal(Gradients.gradients.length, 382)
+  assert.deepEqual(Gradients.byName("Deep Space").colors, ["#000000", "#434343"])
+})
+
+test("gradient assignments normalize colors and arbitrary angles", () => {
+  assert.deepEqual(Model.normalizeAssignment({
+    type: "gradient",
+    name: "Test",
+    colors: ["#aabbcc", "#112233"],
+    angle: -45
+  }), {
+    type: "gradient",
+    name: "Test",
+    colors: ["#AABBCC", "#112233"],
+    angle: 315
+  })
 })
 
 test("state parser keeps valid assignments and drops invalid values", () => {
@@ -97,6 +117,9 @@ test("renderer preserves stock IPC and exposes per-screen methods", () => {
   assert.match(qml, /function setColorForScreen\(/)
   assert.match(qml, /model: Quickshell\.screens/)
   assert.match(qml, /command: \["hyprctl", "monitors", "-j"\]/)
+  assert.match(qml, /chooseFileForKey/)
+  assert.match(qml, /chooseGradientForKey/)
+  assert.match(qml, /GradientSurface/)
   assert.doesNotMatch(qml, /onDoubleClicked/)
 })
 
@@ -113,6 +136,9 @@ test("bar widget exposes per-display wallpaper controls", () => {
   assert.match(qml, /text: "Display layout"/)
   assert.match(qml, /Model\.layoutRect/)
   assert.match(qml, /model: root\.displayGeometries/)
-  assert.equal((qml.match(/displayCard\.colorEditorOpen = false/g) || []).length, 2)
+  assert.ok((qml.match(/displayCard\.colorEditorOpen = false/g) || []).length >= 3)
+  assert.match(qml, /All 382 gradients/)
+  assert.match(qml, /gradientAngleInput/)
+  assert.match(qml, /chooseFileForKey/)
   assert.match(qml, /clearAssignment/)
 })

@@ -27,6 +27,20 @@ function normalizeAssignment(value) {
     var color = normalizeColor(value.color)
     if (color) return { type: "color", color: color }
   }
+  if (value.type === "gradient" && value.colors instanceof Array) {
+    var colors = value.colors.map(normalizeColor).filter(Boolean)
+    if (colors.length >= 2) {
+      var angle = Number(value.angle || 0)
+      if (!isFinite(angle)) angle = 0
+      angle = ((angle % 360) + 360) % 360
+      return {
+        type: "gradient",
+        name: text(value.name) || "Custom gradient",
+        colors: colors,
+        angle: angle
+      }
+    }
+  }
   return null
 }
 
