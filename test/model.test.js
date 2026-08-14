@@ -55,7 +55,7 @@ test("manifest replaces the stock background service", () => {
   assert.ok(manifest.kinds.includes("service"))
   assert.ok(manifest.kinds.includes("bar-widget"))
   assert.equal(manifest.entryPoints.service, "Omosaic.qml")
-  assert.equal(manifest.entryPoints.barWidget, "BarWidget.qml")
+  assert.equal(manifest.entryPoints.barWidget, "Widget.qml")
   assert.equal(manifest.barWidget.defaultSection, "right")
 })
 
@@ -70,7 +70,7 @@ test("renderer preserves stock IPC and exposes per-screen methods", () => {
 })
 
 test("bar widget exposes per-display wallpaper controls", () => {
-  const qml = fs.readFileSync(path.join(root, "BarWidget.qml"), "utf8")
+  const qml = fs.readFileSync(path.join(root, "Widget.qml"), "utf8")
   assert.match(qml, /serviceFor\("lgse\.omosaic"\)/)
   assert.match(qml, /model: Quickshell\.screens/)
   assert.match(qml, /chooseImageForKey/)

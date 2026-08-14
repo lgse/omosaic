@@ -13,7 +13,7 @@
   "keepLoaded": true,
   "entryPoints": {
     "service": "Omosaic.qml",
-    "barWidget": "BarWidget.qml"
+    "barWidget": "Widget.qml"
   },
   "barWidget": {
     "displayName": "Omosaic",
