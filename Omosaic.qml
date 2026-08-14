@@ -17,7 +17,6 @@ Item {
   property var configState: Model.emptyState()
   property string defaultBackground: ""
   property string pickerScreenKey: ""
-  property string colorScreenKey: ""
 
   function keysForScreen(screen) {
     return Model.screenKeys(screen.name, screen.manufacturer, screen.model, screen.serialNumber)
@@ -70,10 +69,8 @@ Item {
     if (pickerScreenKey) imagePicker.running = true
   }
 
-  function chooseColorForKey(screenKey) {
-    if (colorPicker.running) return
-    colorScreenKey = String(screenKey || "").trim()
-    if (colorScreenKey) colorPicker.running = true
+  function setColorForKey(screenKey, color) {
+    return setAssignment(screenKey, { type: "color", color: color })
   }
 
   Process {
@@ -119,18 +116,6 @@ Item {
         var path = String(text || "").trim()
         if (path && root.pickerScreenKey)
           root.setAssignment(root.pickerScreenKey, { type: "image", path: path })
-      }
-    }
-  }
-
-  Process {
-    id: colorPicker
-    command: ["bash", "-lc", '\n      color=$(omarchy-menu-select "Solid color" \\\n        "#000000" "#111111" "#1E1E2E" "#282828" \\\n        "#FFFFFF" "#F38BA8" "#FAB387" "#F9E2AF" \\\n        "#A6E3A1" "#89DCEB" "#89B4FA" "#CBA6F7" "Custom…") || exit 1\n      if [[ $color == "Custom…" ]]; then\n        color=$(omarchy-menu-input "Color (#RRGGBB)" --width 360) || exit 1\n      fi\n      [[ $color =~ ^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$ ]] || exit 1\n      printf "%s" "$color"\n    ']
-    stdout: StdioCollector {
-      onStreamFinished: {
-        var color = Model.normalizeColor(String(text || "").trim())
-        if (color && root.colorScreenKey)
-          root.setAssignment(root.colorScreenKey, { type: "color", color: color })
       }
     }
   }
