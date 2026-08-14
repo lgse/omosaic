@@ -2,6 +2,8 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
+import QtQuick.Dialogs
+import QtCore
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
@@ -97,9 +99,11 @@ Item {
   }
 
   function chooseFileForKey(screenKey) {
-    if (filePicker.running) return
     filePickerScreenKey = String(screenKey || "").trim()
-    if (filePickerScreenKey) filePicker.running = true
+    if (!filePickerScreenKey) return
+    var pictures = String(StandardPaths.writableLocation(StandardPaths.PicturesLocation) || "")
+    nativeFilePicker.currentFolder = Util.fileUrl(pictures || home)
+    nativeFilePicker.open()
   }
 
   Process {
@@ -118,16 +122,22 @@ Item {
     onFileChanged: reload()
   }
 
-  Process {
-    id: filePicker
-    command: ["bash", "-lc", '\n      roots=()\n      [[ -d "$HOME/Pictures" ]] && roots+=("$HOME/Pictures")\n      [[ -d "$HOME/Downloads" ]] && roots+=("$HOME/Downloads")\n      (( ${#roots[@]} )) || roots+=("$HOME")\n      paths=$(IFS=:; printf "%s" "${roots[*]}")\n      omarchy-menu-file "Select wallpaper" "$paths" "jpg jpeg png gif bmp webp" --width 800\n    ']
-    stdout: StdioCollector {
-      onStreamFinished: {
-        var path = String(text || "").trim()
-        if (path && root.filePickerScreenKey)
-          root.setAssignment(root.filePickerScreenKey, { type: "image", path: path })
-      }
+  FileDialog {
+    id: nativeFilePicker
+    title: "Choose a wallpaper"
+    fileMode: FileDialog.OpenFile
+    nameFilters: ["Images (*.jpg *.jpeg *.png *.gif *.bmp *.webp)", "All files (*)"]
+
+    onAccepted: {
+      var url = String(selectedFile || "")
+      var path = url.indexOf("file://") === 0
+        ? decodeURIComponent(url.substring(7)) : decodeURIComponent(url)
+      if (path && root.filePickerScreenKey)
+        root.setAssignment(root.filePickerScreenKey, { type: "image", path: path })
+      root.filePickerScreenKey = ""
     }
+
+    onRejected: root.filePickerScreenKey = ""
   }
 
   Process {
