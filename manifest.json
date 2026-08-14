@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "id": "lgse.omosaic",
-  "name": "Omosaic",
+  "id": "lgse.backdrop",
+  "name": "Backdrop",
   "version": "0.1.0",
   "author": "Pierre Berube",
   "license": "MIT",
@@ -12,11 +12,11 @@
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "service": "Omosaic.qml",
+    "service": "Backdrop.qml",
     "barWidget": "Widget.qml"
   },
   "barWidget": {
-    "displayName": "Omosaic",
+    "displayName": "Backdrop",
     "description": "Choose wallpapers and colors for each display",
     "category": "System",
     "allowMultiple": false,

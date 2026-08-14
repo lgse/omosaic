@@ -13,7 +13,7 @@ Item {
   id: root
 
   readonly property string home: Quickshell.env("HOME")
-  readonly property string stateDirectory: home + "/.config/omarchy/omosaic"
+  readonly property string stateDirectory: home + "/.config/omarchy/backdrop"
   readonly property string statePath: stateDirectory + "/assignments.json"
   readonly property string currentBackgroundLink: home + "/.local/state/omarchy/current/background"
 
@@ -108,8 +108,9 @@ Item {
 
   Process {
     id: prepareStateDirectory
-    command: ["mkdir", "-p", root.stateDirectory]
+    command: ["bash", "-lc", '\n      mkdir -p "$HOME/.config/omarchy/backdrop"\n      old="$HOME/.config/omarchy/omosaic/assignments.json"\n      new="$HOME/.config/omarchy/backdrop/assignments.json"\n      [[ -e $new || ! -e $old ]] || cp "$old" "$new"\n    ']
     Component.onCompleted: running = true
+    onExited: stateFile.reload()
   }
 
   FileView {
@@ -255,7 +256,7 @@ Item {
         window: panel
       }
 
-      WlrLayershell.namespace: "omosaic-background"
+      WlrLayershell.namespace: "backdrop-background"
       WlrLayershell.layer: WlrLayer.Background
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
       exclusionMode: ExclusionMode.Ignore

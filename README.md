@@ -1,10 +1,10 @@
-# Omosaic
+# Backdrop
 
 **Different walls for every display.**
 
-Omosaic is a multi-display wallpaper service for the Omarchy Quattro shell. It replaces Omarchy's stock background renderer while preserving the standard `background` IPC target and global wallpaper fallback.
+Backdrop is a multi-display wallpaper service for the Omarchy Quattro shell. It replaces Omarchy's stock background renderer while preserving the standard `background` IPC target and global wallpaper fallback.
 
-![Omosaic panel showing wallpaper controls for three displays](preview.png)
+![Backdrop panel showing wallpaper controls for three displays](preview.png)
 
 ## Current features
 
@@ -21,14 +21,14 @@ Omosaic is a multi-display wallpaper service for the Omarchy Quattro shell. It r
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/lgse/omosaic.git --enable
+omarchy plugin add https://github.com/lgse/backdrop.git --enable
 ```
 
 Plugins run as unsandboxed code inside `omarchy-shell`. Review third-party plugin code before enabling it.
 
 ## Use
 
-Click the **Omosaic** icon in the Omarchy bar. Its panel lists every connected display with three actions:
+Click the **Backdrop** icon in the Omarchy bar. Its panel lists every connected display with five actions:
 
 - **Themes** browses backgrounds from all installed Omarchy themes.
 - **File** opens the native file picker with filesystem navigation and image previews.
@@ -39,14 +39,14 @@ Click the **Omosaic** icon in the Omarchy bar. Its panel lists every connected d
 Assignments are stored in:
 
 ```text
-~/.config/omarchy/omosaic/assignments.json
+~/.config/omarchy/backdrop/assignments.json
 ```
 
 The plugin never modifies files under `/usr/share/omarchy`.
 
 ## IPC
 
-Omosaic retains Omarchy's `background` IPC target and adds these methods:
+Backdrop retains Omarchy's `background` IPC target and adds these methods:
 
 ```bash
 omarchy-shell -q background setForScreen DP-3 /path/to/wallpaper.png
@@ -62,7 +62,7 @@ A serial-backed key shown by `assignments` is preferred over a connector such as
 - `omarchy theme bg set` changes the fallback used by displays without an explicit assignment.
 - Theme changes preserve explicit per-display assignments.
 - The lock screen continues to use Omarchy's global current background.
-- Disabling or removing Omosaic restores the stock `omarchy.background` service.
+- Disabling or removing Backdrop restores the stock `omarchy.background` service.
 
 ## Roadmap
 

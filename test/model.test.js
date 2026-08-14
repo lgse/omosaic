@@ -104,13 +104,13 @@ test("manifest replaces the stock background service", () => {
   assert.equal(manifest.omarchy.clonedFrom, "omarchy.background")
   assert.ok(manifest.kinds.includes("service"))
   assert.ok(manifest.kinds.includes("bar-widget"))
-  assert.equal(manifest.entryPoints.service, "Omosaic.qml")
+  assert.equal(manifest.entryPoints.service, "Backdrop.qml")
   assert.equal(manifest.entryPoints.barWidget, "Widget.qml")
   assert.equal(manifest.barWidget.defaultSection, "right")
 })
 
 test("renderer preserves stock IPC and exposes per-screen methods", () => {
-  const qml = fs.readFileSync(path.join(root, "Omosaic.qml"), "utf8")
+  const qml = fs.readFileSync(path.join(root, "Backdrop.qml"), "utf8")
   assert.match(qml, /target: "background"/)
   assert.match(qml, /function themeTransition\(/)
   assert.match(qml, /function setForScreen\(/)
@@ -128,7 +128,7 @@ test("renderer preserves stock IPC and exposes per-screen methods", () => {
 
 test("bar widget exposes per-display wallpaper controls", () => {
   const qml = fs.readFileSync(path.join(root, "Widget.qml"), "utf8")
-  assert.match(qml, /serviceFor\("lgse\.omosaic"\)/)
+  assert.match(qml, /serviceFor\("lgse\.backdrop"\)/)
   assert.match(qml, /model: Quickshell\.screens/)
   assert.match(qml, /chooseImageForKey/)
   assert.match(qml, /colorPalette/)
@@ -141,7 +141,7 @@ test("bar widget exposes per-display wallpaper controls", () => {
   assert.match(qml, /model: root\.displayGeometries/)
   assert.ok((qml.match(/displayCard\.colorEditorOpen = false/g) || []).length >= 3)
   assert.match(qml, /GridView \{/)
-  assert.match(qml, /model: root\.omosaicService \? root\.omosaicService\.gradientPresets/)
+  assert.match(qml, /model: root\.backdropService \? root\.backdropService\.gradientPresets/)
   assert.match(qml, /anglePresets: \[0, 45, 90, 135, 180, 225, 270, 315\]/)
   assert.match(qml, /gradientAngleInput/)
   assert.match(qml, /text: "Custom angle"/)

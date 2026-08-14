@@ -7,9 +7,9 @@ import "Model.js" as Model
 
 BarWidget {
   id: root
-  moduleName: "lgse.omosaic"
+  moduleName: "lgse.backdrop"
 
-  readonly property var omosaicService: bar?.shell?.serviceFor("lgse.omosaic")
+  readonly property var backdropService: bar?.shell?.serviceFor("lgse.backdrop")
   readonly property var hostWindow: root.QsWindow ? root.QsWindow.window : null
   readonly property string hostScreenName: hostWindow && hostWindow.screen
     ? String(hostWindow.screen.name || "") : ""
@@ -21,8 +21,8 @@ BarWidget {
     "#000000", "#FFFFFF", "#808080", "#1E1E2E", "#282828", "#111318"
   ]
   readonly property var displayGeometries: {
-    if (omosaicService && omosaicService.monitorLayout.length)
-      return omosaicService.monitorLayout
+    if (backdropService && backdropService.monitorLayout.length)
+      return backdropService.monitorLayout
 
     // Quickshell exposes output dimensions but not compositor coordinates.
     // Keep a visible horizontal fallback until the initial hyprctl read lands.
@@ -64,7 +64,7 @@ BarWidget {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     onClicked: root.popupOpen = !root.popupOpen
-    onEntered: if (root.bar) root.bar.showTooltip(root, "Omosaic wallpapers")
+    onEntered: if (root.bar) root.bar.showTooltip(root, "Backdrop wallpapers")
     onExited: if (root.bar) root.bar.hideTooltip(root)
   }
 
@@ -87,7 +87,7 @@ BarWidget {
         spacing: Style.space(3)
 
         Text {
-          text: "Omosaic"
+          text: "Backdrop"
           color: Color.foreground
           font.family: root.bar.fontFamily
           font.pixelSize: Style.font.title
@@ -113,10 +113,10 @@ BarWidget {
           Rectangle {
             id: displayCard
             required property var modelData
-            readonly property string screenKey: root.omosaicService
-              ? root.omosaicService.keyForScreen(modelData) : modelData.name
-            readonly property var assignment: root.omosaicService
-              ? root.omosaicService.assignmentForScreen(modelData) : null
+            readonly property string screenKey: root.backdropService
+              ? root.backdropService.keyForScreen(modelData) : modelData.name
+            readonly property var assignment: root.backdropService
+              ? root.backdropService.assignmentForScreen(modelData) : null
             readonly property string assignmentLabel: {
               if (!assignment) return "Using Omarchy default"
               if (assignment.type === "color") return assignment.color
@@ -131,14 +131,14 @@ BarWidget {
             function applySelectedGradient() {
               var angle = Number(gradientAngleInput.text)
               if (!isFinite(angle)) return
-              if (root.omosaicService)
-                root.omosaicService.setGradientForKey(screenKey, selectedGradientName, angle)
+              if (root.backdropService)
+                root.backdropService.setGradientForKey(screenKey, selectedGradientName, angle)
             }
 
             function applyHexColor() {
               var color = Model.normalizeColor(hexInput.text)
-              if (color && root.omosaicService)
-                root.omosaicService.setColorForKey(screenKey, color)
+              if (color && root.backdropService)
+                root.backdropService.setColorForKey(screenKey, color)
             }
 
             onColorEditorOpenChanged: {
@@ -221,8 +221,8 @@ BarWidget {
                     displayCard.colorEditorOpen = false
                     displayCard.gradientEditorOpen = false
                     root.popupOpen = false
-                    if (root.omosaicService)
-                      root.omosaicService.chooseImageForKey(displayCard.screenKey)
+                    if (root.backdropService)
+                      root.backdropService.chooseImageForKey(displayCard.screenKey)
                   }
                 }
 
@@ -234,8 +234,8 @@ BarWidget {
                     displayCard.colorEditorOpen = false
                     displayCard.gradientEditorOpen = false
                     root.popupOpen = false
-                    if (root.omosaicService)
-                      root.omosaicService.chooseFileForKey(displayCard.screenKey)
+                    if (root.backdropService)
+                      root.backdropService.chooseFileForKey(displayCard.screenKey)
                   }
                 }
 
@@ -267,8 +267,8 @@ BarWidget {
                   onActivated: {
                     displayCard.colorEditorOpen = false
                     displayCard.gradientEditorOpen = false
-                    if (root.omosaicService)
-                      root.omosaicService.clearAssignment(displayCard.screenKey)
+                    if (root.backdropService)
+                      root.backdropService.clearAssignment(displayCard.screenKey)
                   }
                 }
               }
@@ -305,8 +305,8 @@ BarWidget {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: if (root.omosaicService)
-                          root.omosaicService.setColorForKey(displayCard.screenKey, String(swatch.modelData))
+                        onClicked: if (root.backdropService)
+                          root.backdropService.setColorForKey(displayCard.screenKey, String(swatch.modelData))
                       }
                     }
                   }
@@ -367,7 +367,7 @@ BarWidget {
                   cellWidth: (width - Style.space(10)) / 4
                   cellHeight: Style.space(54)
                   boundsBehavior: Flickable.StopAtBounds
-                  model: root.omosaicService ? root.omosaicService.gradientPresets : []
+                  model: root.backdropService ? root.backdropService.gradientPresets : []
 
                   ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
