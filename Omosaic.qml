@@ -21,8 +21,6 @@ Item {
   property string defaultBackground: ""
   property string pickerScreenKey: ""
   property string filePickerScreenKey: ""
-  property string gradientPickerScreenKey: ""
-  property real gradientPickerAngle: 0
 
   function keysForScreen(screen) {
     return Model.screenKeys(screen.name, screen.manufacturer, screen.model, screen.serialNumber)
@@ -98,17 +96,6 @@ Item {
     })
   }
 
-  function chooseGradientForKey(screenKey, angle) {
-    if (gradientPicker.running) return
-    gradientPickerScreenKey = String(screenKey || "").trim()
-    gradientPickerAngle = Number(angle || 0)
-    if (!gradientPickerScreenKey) return
-    var command = ["omarchy-menu-select", "Gradient"]
-    for (var i = 0; i < gradientPresets.length; i++) command.push(gradientPresets[i].name)
-    gradientPicker.command = command
-    gradientPicker.running = true
-  }
-
   function chooseFileForKey(screenKey) {
     if (filePicker.running) return
     filePickerScreenKey = String(screenKey || "").trim()
@@ -139,17 +126,6 @@ Item {
         var path = String(text || "").trim()
         if (path && root.filePickerScreenKey)
           root.setAssignment(root.filePickerScreenKey, { type: "image", path: path })
-      }
-    }
-  }
-
-  Process {
-    id: gradientPicker
-    stdout: StdioCollector {
-      onStreamFinished: {
-        var name = String(text || "").trim()
-        if (name && root.gradientPickerScreenKey)
-          root.setGradientForKey(root.gradientPickerScreenKey, name, root.gradientPickerAngle)
       }
     }
   }

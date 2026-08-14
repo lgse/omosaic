@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import Quickshell
 import qs.Ui
 import qs.Commons
@@ -12,10 +13,6 @@ BarWidget {
   readonly property var hostWindow: root.QsWindow ? root.QsWindow.window : null
   readonly property string hostScreenName: hostWindow && hostWindow.screen
     ? String(hostWindow.screen.name || "") : ""
-  readonly property var favoriteGradientNames: [
-    "Moonlit Asteroid", "Deep Space", "Atlas",
-    "Mango Pulp", "Royal", "Purple Paradise"
-  ]
   readonly property var colorPalette: [
     String(Color.background), String(Color.foreground), String(Color.accent),
     String(Color.urgent), String(Color.muted),
@@ -76,7 +73,7 @@ BarWidget {
     bar: root.bar
     owner: root
     open: root.popupOpen
-    contentWidth: popup.fittedContentWidth(Style.space(430))
+    contentWidth: popup.fittedContentWidth(Style.space(520))
     contentHeight: popup.fittedContentHeight(content.implicitHeight)
 
     Column {
@@ -128,7 +125,7 @@ BarWidget {
             }
             property bool colorEditorOpen: false
             property bool gradientEditorOpen: false
-            property string selectedGradientName: root.favoriteGradientNames[0]
+            property string selectedGradientName: "Moonlit Asteroid"
 
             function applySelectedGradient() {
               var angle = Number(gradientAngleInput.text)
@@ -152,7 +149,7 @@ BarWidget {
             onGradientEditorOpenChanged: {
               if (!gradientEditorOpen) return
               selectedGradientName = assignment && assignment.type === "gradient"
-                ? assignment.name : root.favoriteGradientNames[0]
+                ? assignment.name : "Moonlit Asteroid"
               gradientAngleInput.text = String(assignment && assignment.type === "gradient"
                 ? assignment.angle : 0)
             }
@@ -189,7 +186,7 @@ BarWidget {
                   Text {
                     width: parent.width
                     text: (displayCard.modelData.model || displayCard.modelData.name)
-                      + (displayCard.modelData.name === root.hostScreenName ? " (this monitor)" : "")
+                      + (displayCard.modelData.name === root.hostScreenName ? " (current)" : "")
                     color: Color.foreground
                     font.family: root.bar.fontFamily
                     font.pixelSize: Style.font.body
@@ -361,61 +358,61 @@ BarWidget {
                 spacing: Style.space(8)
                 visible: displayCard.gradientEditorOpen
 
-                Grid {
+                GridView {
+                  id: gradientGrid
                   width: parent.width
-                  columns: 3
-                  columnSpacing: Style.space(7)
-                  rowSpacing: Style.space(7)
+                  height: Style.space(145)
+                  clip: true
+                  cellWidth: (width - Style.space(10)) / 4
+                  cellHeight: Style.space(54)
+                  boundsBehavior: Flickable.StopAtBounds
+                  model: root.omosaicService ? root.omosaicService.gradientPresets : []
 
-                  Repeater {
-                    model: root.favoriteGradientNames
+                  ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+                  delegate: Rectangle {
+                    id: gradientPreset
+                    required property var modelData
+                    width: gradientGrid.cellWidth - Style.space(7)
+                    height: gradientGrid.cellHeight - Style.space(7)
+                    radius: Style.cornerRadius > 0 ? Style.space(5) : 0
+                    clip: true
+                    border.width: displayCard.selectedGradientName === String(modelData.name) ? 3 : 1
+                    border.color: border.width === 3
+                      ? Color.foreground : Util.alpha(Color.foreground, 0.25)
+
+                    GradientSurface {
+                      anchors.fill: parent
+                      colors: gradientPreset.modelData.colors
+                      angle: Number(gradientAngleInput.text || 0)
+                    }
 
                     Rectangle {
-                      id: gradientPreset
-                      required property var modelData
-                      readonly property var preset: root.omosaicService
-                        ? root.omosaicService.gradientByName(String(modelData)) : null
-                      width: (gradientEditor.width - Style.space(14)) / 3
-                      height: Style.space(48)
-                      radius: Style.cornerRadius > 0 ? Style.space(5) : 0
-                      clip: true
-                      border.width: displayCard.selectedGradientName === String(modelData) ? 3 : 1
-                      border.color: border.width === 3
-                        ? Color.foreground : Util.alpha(Color.foreground, 0.25)
+                      anchors.left: parent.left
+                      anchors.right: parent.right
+                      anchors.bottom: parent.bottom
+                      height: Style.space(18)
+                      color: Util.alpha(Color.background, 0.72)
 
-                      GradientSurface {
+                      Text {
                         anchors.fill: parent
-                        colors: gradientPreset.preset ? gradientPreset.preset.colors : []
-                        angle: Number(gradientAngleInput.text || 0)
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        text: String(gradientPreset.modelData.name)
+                        color: Color.foreground
+                        font.family: root.bar.fontFamily
+                        font.pixelSize: Style.font.caption
+                        elide: Text.ElideRight
                       }
+                    }
 
-                      Rectangle {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.bottom: parent.bottom
-                        height: Style.space(18)
-                        color: Util.alpha(Color.background, 0.72)
-
-                        Text {
-                          anchors.fill: parent
-                          horizontalAlignment: Text.AlignHCenter
-                          verticalAlignment: Text.AlignVCenter
-                          text: String(gradientPreset.modelData)
-                          color: Color.foreground
-                          font.family: root.bar.fontFamily
-                          font.pixelSize: Style.font.caption
-                          elide: Text.ElideRight
-                        }
-                      }
-
-                      MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                          displayCard.selectedGradientName = String(gradientPreset.modelData)
-                          displayCard.applySelectedGradient()
-                        }
+                    MouseArea {
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onClicked: {
+                        displayCard.selectedGradientName = String(gradientPreset.modelData.name)
+                        displayCard.applySelectedGradient()
                       }
                     }
                   }
@@ -434,21 +431,17 @@ BarWidget {
                   width: parent.width
                   spacing: Style.space(7)
 
-                  ActionButton {
-                    width: parent.width - angleInputBox.width - applyGradient.width - parent.spacing * 2
-                    label: "All 382 gradients…"
-                    fontFamily: root.bar.fontFamily
-                    onActivated: {
-                      displayCard.gradientEditorOpen = false
-                      root.popupOpen = false
-                      if (root.omosaicService)
-                        root.omosaicService.chooseGradientForKey(displayCard.screenKey, Number(gradientAngleInput.text || 0))
-                    }
+                  Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Angle"
+                    color: Util.alpha(Color.foreground, 0.7)
+                    font.family: root.bar.fontFamily
+                    font.pixelSize: Style.font.caption
                   }
 
                   Rectangle {
                     id: angleInputBox
-                    width: Style.space(78)
+                    width: Style.space(100)
                     height: Style.space(28)
                     radius: Style.cornerRadius > 0 ? height / 4 : 0
                     color: Util.alpha(Color.foreground, 0.06)
@@ -484,7 +477,7 @@ BarWidget {
                 }
 
                 Text {
-                  text: "Angle: 0° is left → right; any positive or negative value is accepted."
+                  text: "0° → right · 90° → down"
                   color: Util.alpha(Color.foreground, 0.55)
                   font.family: root.bar.fontFamily
                   font.pixelSize: Style.font.caption
@@ -557,7 +550,7 @@ BarWidget {
                 Text {
                   width: parent.width
                   horizontalAlignment: Text.AlignHCenter
-                  text: monitorTile.current ? "this monitor" : (monitorTile.modelData.model || "display")
+                  text: monitorTile.current ? "(current)" : (monitorTile.modelData.model || "display")
                   color: Util.alpha(Color.foreground, 0.65)
                   font.family: root.bar.fontFamily
                   font.pixelSize: Style.font.caption
