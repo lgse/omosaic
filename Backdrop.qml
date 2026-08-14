@@ -2,8 +2,6 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Dialogs
-import QtCore
 import qs.Commons
 import qs.Ui
 import "Model.js" as Model
@@ -99,11 +97,15 @@ Item {
   }
 
   function chooseFileForKey(screenKey) {
+    if (filePicker.running) return
     filePickerScreenKey = String(screenKey || "").trim()
     if (!filePickerScreenKey) return
-    var pictures = String(StandardPaths.writableLocation(StandardPaths.PicturesLocation) || "")
-    nativeFilePicker.currentFolder = Util.fileUrl(pictures || home)
-    nativeFilePicker.open()
+
+    var url = String(Qt.resolvedUrl("file-picker.py"))
+    var path = url.indexOf("file://") === 0
+      ? decodeURIComponent(url.substring(7)) : decodeURIComponent(url)
+    filePicker.command = ["python3", path]
+    filePicker.running = true
   }
 
   Process {
@@ -123,22 +125,20 @@ Item {
     onFileChanged: reload()
   }
 
-  FileDialog {
-    id: nativeFilePicker
-    title: "Choose a wallpaper"
-    fileMode: FileDialog.OpenFile
-    nameFilters: ["Images (*.jpg *.jpeg *.png *.gif *.bmp *.webp)", "All files (*)"]
-
-    onAccepted: {
-      var url = String(selectedFile || "")
-      var path = url.indexOf("file://") === 0
-        ? decodeURIComponent(url.substring(7)) : decodeURIComponent(url)
-      if (path && root.filePickerScreenKey)
-        root.setAssignment(root.filePickerScreenKey, { type: "image", path: path })
-      root.filePickerScreenKey = ""
+  // GTK's native dialog can abort when hosted inside Quickshell's Qt process.
+  // Run it as a tiny helper so a portal/GTK failure cannot take down the shell.
+  Process {
+    id: filePicker
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var path = String(text || "").trim()
+        if (path && root.filePickerScreenKey)
+          root.setAssignment(root.filePickerScreenKey, { type: "image", path: path })
+        root.filePickerScreenKey = ""
+      }
     }
-
-    onRejected: root.filePickerScreenKey = ""
+    onRunningChanged: if (!running && filePickerScreenKey) filePickerScreenKey = ""
   }
 
   Process {

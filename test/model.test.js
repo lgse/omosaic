@@ -118,12 +118,20 @@ test("renderer preserves stock IPC and exposes per-screen methods", () => {
   assert.match(qml, /model: Quickshell\.screens/)
   assert.match(qml, /command: \["hyprctl", "monitors", "-j"\]/)
   assert.match(qml, /chooseFileForKey/)
-  assert.match(qml, /FileDialog \{/)
-  assert.match(qml, /StandardPaths\.PicturesLocation/)
+  assert.match(qml, /Qt\.resolvedUrl\("file-picker\.py"\)/)
+  assert.match(qml, /filePicker\.command = \["python3", path\]/)
+  assert.doesNotMatch(qml, /FileDialog \{/)
   assert.doesNotMatch(qml, /omarchy-menu-file/)
   assert.match(qml, /gradientPresets/)
   assert.match(qml, /GradientSurface/)
   assert.doesNotMatch(qml, /onDoubleClicked/)
+})
+
+test("native file picker runs outside the Quickshell process", () => {
+  const helper = fs.readFileSync(path.join(root, "file-picker.py"), "utf8")
+  assert.match(helper, /Gtk\.FileDialog/)
+  assert.match(helper, /dialog\.set_filters/)
+  assert.match(helper, /file\.get_path\(\)/)
 })
 
 test("bar widget exposes per-display wallpaper controls", () => {
