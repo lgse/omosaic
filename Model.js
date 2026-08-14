@@ -55,6 +55,37 @@ function parseState(raw) {
   }
 }
 
+function parseMonitorLayout(raw) {
+  try {
+    var monitors = JSON.parse(String(raw || "[]"))
+    if (!(monitors instanceof Array)) return []
+
+    return monitors.filter(function(monitor) {
+      return monitor && monitor.disabled !== true
+    }).map(function(monitor) {
+      var scale = Math.max(0.01, Number(monitor.scale || 1))
+      var transform = Number(monitor.transform || 0)
+      var rotated = transform === 1 || transform === 3 || transform === 5 || transform === 7
+      var physicalWidth = Math.max(1, Number(monitor.width || 1))
+      var physicalHeight = Math.max(1, Number(monitor.height || 1))
+      return {
+        id: Number(monitor.id || 0),
+        name: text(monitor.name) || "Display",
+        model: text(monitor.model),
+        serial: text(monitor.serial),
+        x: Number(monitor.x || 0),
+        y: Number(monitor.y || 0),
+        width: (rotated ? physicalHeight : physicalWidth) / scale,
+        height: (rotated ? physicalWidth : physicalHeight) / scale,
+        transform: transform,
+        focused: monitor.focused === true
+      }
+    })
+  } catch (error) {
+    return []
+  }
+}
+
 function layoutBounds(displays) {
   var list = displays instanceof Array ? displays : []
   if (!list.length) return { x: 0, y: 0, width: 1, height: 1 }
@@ -115,6 +146,7 @@ if (typeof module !== "undefined") {
     normalizeAssignment: normalizeAssignment,
     normalizeColor: normalizeColor,
     parseState: parseState,
+    parseMonitorLayout: parseMonitorLayout,
     layoutBounds: layoutBounds,
     layoutRect: layoutRect,
     assignmentFor: assignmentFor

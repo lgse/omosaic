@@ -19,17 +19,25 @@ BarWidget {
     "#000000", "#FFFFFF", "#808080", "#1E1E2E", "#282828", "#111318"
   ]
   readonly property var displayGeometries: {
+    if (omosaicService && omosaicService.monitorLayout.length)
+      return omosaicService.monitorLayout
+
+    // Quickshell exposes output dimensions but not compositor coordinates.
+    // Keep a visible horizontal fallback until the initial hyprctl read lands.
     var displays = []
+    var x = 0
     for (var i = 0; i < Quickshell.screens.length; i++) {
       var screen = Quickshell.screens[i]
-      var geometry = screen.geometry
+      var width = Number(screen.width || 1)
       displays.push({
         name: String(screen.name || ""),
-        x: Number(geometry.x || 0),
-        y: Number(geometry.y || 0),
-        width: Number(geometry.width || screen.width || 1),
-        height: Number(geometry.height || screen.height || 1)
+        model: String(screen.model || ""),
+        x: x,
+        y: 0,
+        width: width,
+        height: Number(screen.height || 1)
       })
+      x += width
     }
     return displays
   }
@@ -188,6 +196,7 @@ BarWidget {
                   label: "Wallpaper"
                   fontFamily: root.bar.fontFamily
                   onActivated: {
+                    displayCard.colorEditorOpen = false
                     root.popupOpen = false
                     if (root.omosaicService)
                       root.omosaicService.chooseImageForKey(displayCard.screenKey)
@@ -207,6 +216,7 @@ BarWidget {
                   fontFamily: root.bar.fontFamily
                   available: displayCard.assignment !== null
                   onActivated: {
+                    displayCard.colorEditorOpen = false
                     if (root.omosaicService)
                       root.omosaicService.clearAssignment(displayCard.screenKey)
                   }
@@ -320,18 +330,13 @@ BarWidget {
           border.color: Util.alpha(Color.foreground, 0.12)
 
           Repeater {
-            model: Quickshell.screens
+            model: root.displayGeometries
 
             Rectangle {
               id: monitorTile
               required property var modelData
-              readonly property var geometry: modelData.geometry
-              readonly property var mapped: Model.layoutRect({
-                x: geometry.x,
-                y: geometry.y,
-                width: geometry.width,
-                height: geometry.height
-              }, root.displayBounds, layoutCanvas.width, layoutCanvas.height, Style.space(10))
+              readonly property var mapped: Model.layoutRect(modelData,
+                root.displayBounds, layoutCanvas.width, layoutCanvas.height, Style.space(10))
               readonly property bool current: modelData.name === root.hostScreenName
 
               x: mapped.x

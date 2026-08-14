@@ -17,6 +17,20 @@ test("connector is used when hardware identity has no serial", () => {
   assert.deepEqual(Model.screenKeys("eDP-1", "BOE", "Display", ""), ["eDP-1"])
 })
 
+test("Hyprland monitor layout uses logical dimensions and rotation", () => {
+  const layout = Model.parseMonitorLayout(JSON.stringify([
+    { id: 0, name: "DP-3", x: 0, y: 900, width: 2560, height: 1440, scale: 1.6, transform: 0 },
+    { id: 1, name: "DP-4", x: 0, y: 0, width: 2560, height: 1440, scale: 1.6, transform: 0 },
+    { id: 2, name: "DP-5", x: 1600, y: 338, width: 2560, height: 1440, scale: 1.6, transform: 3 }
+  ]))
+
+  assert.deepEqual(layout.map(({ name, x, y, width, height }) => ({ name, x, y, width, height })), [
+    { name: "DP-3", x: 0, y: 900, width: 1600, height: 900 },
+    { name: "DP-4", x: 0, y: 0, width: 1600, height: 900 },
+    { name: "DP-5", x: 1600, y: 338, width: 900, height: 1600 }
+  ])
+})
+
 test("state parser keeps valid assignments and drops invalid values", () => {
   const state = Model.parseState(JSON.stringify({
     version: 1,
@@ -82,6 +96,7 @@ test("renderer preserves stock IPC and exposes per-screen methods", () => {
   assert.match(qml, /function setForScreen\(/)
   assert.match(qml, /function setColorForScreen\(/)
   assert.match(qml, /model: Quickshell\.screens/)
+  assert.match(qml, /command: \["hyprctl", "monitors", "-j"\]/)
   assert.doesNotMatch(qml, /onDoubleClicked/)
 })
 
@@ -97,5 +112,7 @@ test("bar widget exposes per-display wallpaper controls", () => {
   assert.match(qml, /\(this monitor\)/)
   assert.match(qml, /text: "Display layout"/)
   assert.match(qml, /Model\.layoutRect/)
+  assert.match(qml, /model: root\.displayGeometries/)
+  assert.equal((qml.match(/displayCard\.colorEditorOpen = false/g) || []).length, 2)
   assert.match(qml, /clearAssignment/)
 })

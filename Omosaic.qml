@@ -15,6 +15,7 @@ Item {
   readonly property string currentBackgroundLink: home + "/.local/state/omarchy/current/background"
 
   property var configState: Model.emptyState()
+  property var monitorLayout: []
   property string defaultBackground: ""
   property string pickerScreenKey: ""
 
@@ -29,6 +30,10 @@ Item {
 
   function assignmentForScreen(screen) {
     return Model.assignmentFor(configState, keysForScreen(screen))
+  }
+
+  function refreshMonitorLayout() {
+    if (!monitorLayoutReader.running) monitorLayoutReader.running = true
   }
 
   function saveState(next) {
@@ -87,6 +92,28 @@ Item {
     onLoaded: root.configState = Model.parseState(text())
     onLoadFailed: root.configState = Model.emptyState()
     onFileChanged: reload()
+  }
+
+  Process {
+    id: monitorLayoutReader
+    command: ["hyprctl", "monitors", "-j"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.monitorLayout = Model.parseMonitorLayout(text)
+    }
+  }
+
+  Connections {
+    target: Quickshell
+    function onScreensChanged() { root.refreshMonitorLayout() }
+  }
+
+  Timer {
+    interval: 5000
+    repeat: true
+    running: true
+    triggeredOnStart: true
+    onTriggered: root.refreshMonitorLayout()
   }
 
   Process {
@@ -153,6 +180,10 @@ Item {
 
     function assignments(): string {
       return JSON.stringify(root.configState)
+    }
+
+    function layout(): string {
+      return JSON.stringify(root.monitorLayout)
     }
   }
 
