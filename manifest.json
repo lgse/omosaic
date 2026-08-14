@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "lgse.omosaic",
+  "name": "Omosaic",
+  "version": "0.1.0",
+  "author": "Pierre Berube",
+  "license": "MIT",
+  "description": "Different walls for every display.",
+  "kinds": [
+    "service"
+  ],
+  "entryPoints": {
+    "service": "Omosaic.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.background"
+  }
+}

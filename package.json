@@ -1,0 +1,10 @@
+{
+  "name": "omosaic",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Different walls for every display.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
