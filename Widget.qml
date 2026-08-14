@@ -11,8 +11,8 @@ BarWidget {
   readonly property var omosaicService: bar?.shell?.serviceFor("lgse.omosaic")
   readonly property var colorPalette: [
     String(Color.background), String(Color.foreground), String(Color.accent),
-    String(Color.red), String(Color.orange), String(Color.yellow),
-    String(Color.green), String(Color.cyan), String(Color.blue), String(Color.magenta),
+    String(Color.urgent), String(Color.muted),
+    "#F38BA8", "#FAB387", "#F9E2AF", "#A6E3A1", "#89DCEB", "#89B4FA", "#CBA6F7",
     "#000000", "#FFFFFF", "#808080", "#1E1E2E", "#282828", "#111318"
   ]
   property bool popupOpen: false
@@ -243,7 +243,7 @@ BarWidget {
                     color: Util.alpha(Color.foreground, 0.06)
                     border.width: 1
                     border.color: Model.normalizeColor(hexInput.text)
-                      ? Util.alpha(Color.foreground, 0.22) : Color.red
+                      ? Util.alpha(Color.foreground, 0.22) : Color.urgent
 
                     TextInput {
                       id: hexInput
