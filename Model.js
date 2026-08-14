@@ -55,6 +55,48 @@ function parseState(raw) {
   }
 }
 
+function layoutBounds(displays) {
+  var list = displays instanceof Array ? displays : []
+  if (!list.length) return { x: 0, y: 0, width: 1, height: 1 }
+
+  var minX = Infinity
+  var minY = Infinity
+  var maxX = -Infinity
+  var maxY = -Infinity
+  list.forEach(function(display) {
+    var x = Number(display.x || 0)
+    var y = Number(display.y || 0)
+    var width = Math.max(1, Number(display.width || 1))
+    var height = Math.max(1, Number(display.height || 1))
+    minX = Math.min(minX, x)
+    minY = Math.min(minY, y)
+    maxX = Math.max(maxX, x + width)
+    maxY = Math.max(maxY, y + height)
+  })
+
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+}
+
+function layoutRect(display, bounds, canvasWidth, canvasHeight, padding) {
+  var item = display || {}
+  var area = bounds || layoutBounds([])
+  var pad = Math.max(0, Number(padding || 0))
+  var availableWidth = Math.max(1, Number(canvasWidth || 1) - pad * 2)
+  var availableHeight = Math.max(1, Number(canvasHeight || 1) - pad * 2)
+  var scale = Math.min(availableWidth / Math.max(1, area.width), availableHeight / Math.max(1, area.height))
+  var drawnWidth = area.width * scale
+  var drawnHeight = area.height * scale
+  var offsetX = pad + (availableWidth - drawnWidth) / 2
+  var offsetY = pad + (availableHeight - drawnHeight) / 2
+
+  return {
+    x: offsetX + (Number(item.x || 0) - area.x) * scale,
+    y: offsetY + (Number(item.y || 0) - area.y) * scale,
+    width: Math.max(1, Number(item.width || 1) * scale),
+    height: Math.max(1, Number(item.height || 1) * scale)
+  }
+}
+
 function assignmentFor(state, keys) {
   var displays = state && state.displays && typeof state.displays === "object"
     ? state.displays : {}
@@ -73,6 +115,8 @@ if (typeof module !== "undefined") {
     normalizeAssignment: normalizeAssignment,
     normalizeColor: normalizeColor,
     parseState: parseState,
+    layoutBounds: layoutBounds,
+    layoutRect: layoutRect,
     assignmentFor: assignmentFor
   }
 }

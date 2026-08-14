@@ -18,6 +18,22 @@ BarWidget {
     "#F38BA8", "#FAB387", "#F9E2AF", "#A6E3A1", "#89DCEB", "#89B4FA", "#CBA6F7",
     "#000000", "#FFFFFF", "#808080", "#1E1E2E", "#282828", "#111318"
   ]
+  readonly property var displayGeometries: {
+    var displays = []
+    for (var i = 0; i < Quickshell.screens.length; i++) {
+      var screen = Quickshell.screens[i]
+      var geometry = screen.geometry
+      displays.push({
+        name: String(screen.name || ""),
+        x: Number(geometry.x || 0),
+        y: Number(geometry.y || 0),
+        width: Number(geometry.width || screen.width || 1),
+        height: Number(geometry.height || screen.height || 1)
+      })
+    }
+    return displays
+  }
+  readonly property var displayBounds: Model.layoutBounds(displayGeometries)
   property bool popupOpen: false
 
   function close() { popupOpen = false }
@@ -274,6 +290,86 @@ BarWidget {
                     available: Model.normalizeColor(hexInput.text) !== ""
                     onActivated: displayCard.applyHexColor()
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Column {
+        id: layoutSection
+        width: parent.width
+        spacing: Style.space(6)
+
+        Text {
+          text: "Display layout"
+          color: Color.foreground
+          font.family: root.bar.fontFamily
+          font.pixelSize: Style.font.body
+          font.bold: true
+        }
+
+        Rectangle {
+          id: layoutCanvas
+          width: parent.width
+          height: Style.space(125)
+          radius: Style.cornerRadius
+          color: Util.alpha(Color.foreground, 0.035)
+          border.width: 1
+          border.color: Util.alpha(Color.foreground, 0.12)
+
+          Repeater {
+            model: Quickshell.screens
+
+            Rectangle {
+              id: monitorTile
+              required property var modelData
+              readonly property var geometry: modelData.geometry
+              readonly property var mapped: Model.layoutRect({
+                x: geometry.x,
+                y: geometry.y,
+                width: geometry.width,
+                height: geometry.height
+              }, root.displayBounds, layoutCanvas.width, layoutCanvas.height, Style.space(10))
+              readonly property bool current: modelData.name === root.hostScreenName
+
+              x: mapped.x
+              y: mapped.y
+              width: mapped.width
+              height: mapped.height
+              radius: Style.cornerRadius > 0 ? Style.space(4) : 0
+              color: current
+                ? Util.alpha(Color.accent, 0.24)
+                : Util.alpha(Color.foreground, 0.075)
+              border.width: current ? 2 : 1
+              border.color: current ? Color.accent : Util.alpha(Color.foreground, 0.32)
+
+              Column {
+                anchors.centerIn: parent
+                width: parent.width - Style.space(8)
+                spacing: 0
+
+                Text {
+                  width: parent.width
+                  horizontalAlignment: Text.AlignHCenter
+                  text: monitorTile.modelData.name
+                  color: Color.foreground
+                  font.family: root.bar.fontFamily
+                  font.pixelSize: Style.font.caption
+                  font.bold: true
+                  elide: Text.ElideRight
+                }
+
+                Text {
+                  width: parent.width
+                  horizontalAlignment: Text.AlignHCenter
+                  text: monitorTile.current ? "this monitor" : (monitorTile.modelData.model || "display")
+                  color: Util.alpha(Color.foreground, 0.65)
+                  font.family: root.bar.fontFamily
+                  font.pixelSize: Style.font.caption
+                  elide: Text.ElideRight
+                  visible: monitorTile.height >= Style.space(34)
                 }
               }
             }

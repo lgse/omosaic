@@ -33,6 +33,22 @@ test("state parser keeps valid assignments and drops invalid values", () => {
   })
 })
 
+test("display layout preserves monitor positions and proportions", () => {
+  const displays = [
+    { x: 0, y: 0, width: 1920, height: 1080 },
+    { x: 1920, y: -360, width: 2560, height: 1440 }
+  ]
+  const bounds = Model.layoutBounds(displays)
+  assert.deepEqual(bounds, { x: 0, y: -360, width: 4480, height: 1440 })
+
+  const left = Model.layoutRect(displays[0], bounds, 448, 144, 0)
+  const right = Model.layoutRect(displays[1], bounds, 448, 144, 0)
+  assert.equal(left.x, 0)
+  assert.equal(right.x, 192)
+  assert.equal(right.y, 0)
+  assert.equal(right.width, 256)
+})
+
 test("assignment lookup follows stable-to-fallback key order", () => {
   const state = {
     version: 1,
@@ -79,5 +95,7 @@ test("bar widget exposes per-display wallpaper controls", () => {
   assert.match(qml, /Model\.normalizeColor\(hexInput\.text\)/)
   assert.match(qml, /hostWindow\.screen/)
   assert.match(qml, /\(this monitor\)/)
+  assert.match(qml, /text: "Display layout"/)
+  assert.match(qml, /Model\.layoutRect/)
   assert.match(qml, /clearAssignment/)
 })
