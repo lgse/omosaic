@@ -33,7 +33,7 @@ Click the **Omosaic** icon in the Omarchy bar. Its panel lists every connected d
 - **Themes** browses backgrounds from all installed Omarchy themes.
 - **File** opens the native file picker with filesystem navigation and image previews.
 - **Solid color** offers presets and custom hex colors.
-- **Gradient** provides an in-panel, scrollable gallery of all 382 uiGradients and a custom angle.
+- **Gradient** provides an in-panel, scrollable gallery of all 382 uiGradients, common angle presets, and a custom-angle fallback.
 - **Reset** returns that display to Omarchy's global background.
 
 Assignments are stored in:

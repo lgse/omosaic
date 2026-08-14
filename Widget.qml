@@ -13,6 +13,7 @@ BarWidget {
   readonly property var hostWindow: root.QsWindow ? root.QsWindow.window : null
   readonly property string hostScreenName: hostWindow && hostWindow.screen
     ? String(hostWindow.screen.name || "") : ""
+  readonly property var anglePresets: [0, 45, 90, 135, 180, 225, 270, 315]
   readonly property var colorPalette: [
     String(Color.background), String(Color.foreground), String(Color.accent),
     String(Color.urgent), String(Color.muted),
@@ -427,13 +428,39 @@ BarWidget {
                   elide: Text.ElideRight
                 }
 
+                Grid {
+                  width: parent.width
+                  columns: 8
+                  columnSpacing: Style.space(5)
+
+                  Repeater {
+                    model: root.anglePresets
+
+                    ActionButton {
+                      required property var modelData
+                      width: (gradientEditor.width - Style.space(35)) / 8
+                      label: String(modelData) + "°"
+                      fontFamily: root.bar.fontFamily
+                      active: {
+                        var value = Number(gradientAngleInput.text)
+                        if (!isFinite(value)) return false
+                        return ((value % 360) + 360) % 360 === Number(modelData)
+                      }
+                      onActivated: {
+                        gradientAngleInput.text = String(modelData)
+                        displayCard.applySelectedGradient()
+                      }
+                    }
+                  }
+                }
+
                 Row {
                   width: parent.width
                   spacing: Style.space(7)
 
                   Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Angle"
+                    text: "Custom angle"
                     color: Util.alpha(Color.foreground, 0.7)
                     font.family: root.bar.fontFamily
                     font.pixelSize: Style.font.caption
@@ -477,7 +504,7 @@ BarWidget {
                 }
 
                 Text {
-                  text: "0° → right · 90° → down"
+                  text: "Presets: 0° → right · 90° → down"
                   color: Util.alpha(Color.foreground, 0.55)
                   font.family: root.bar.fontFamily
                   font.pixelSize: Style.font.caption
