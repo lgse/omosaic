@@ -9,6 +9,9 @@ BarWidget {
   moduleName: "lgse.omosaic"
 
   readonly property var omosaicService: bar?.shell?.serviceFor("lgse.omosaic")
+  readonly property var hostWindow: root.QsWindow ? root.QsWindow.window : null
+  readonly property string hostScreenName: hostWindow && hostWindow.screen
+    ? String(hostWindow.screen.name || "") : ""
   readonly property var colorPalette: [
     String(Color.background), String(Color.foreground), String(Color.accent),
     String(Color.urgent), String(Color.muted),
@@ -139,7 +142,8 @@ BarWidget {
 
                   Text {
                     width: parent.width
-                    text: displayCard.modelData.model || displayCard.modelData.name
+                    text: (displayCard.modelData.model || displayCard.modelData.name)
+                      + (displayCard.modelData.name === root.hostScreenName ? " (this monitor)" : "")
                     color: Color.foreground
                     font.family: root.bar.fontFamily
                     font.pixelSize: Style.font.body

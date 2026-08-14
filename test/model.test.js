@@ -77,5 +77,7 @@ test("bar widget exposes per-display wallpaper controls", () => {
   assert.match(qml, /colorPalette/)
   assert.match(qml, /setColorForKey/)
   assert.match(qml, /Model\.normalizeColor\(hexInput\.text\)/)
+  assert.match(qml, /hostWindow\.screen/)
+  assert.match(qml, /\(this monitor\)/)
   assert.match(qml, /clearAssignment/)
 })
