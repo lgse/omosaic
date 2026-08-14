@@ -7,10 +7,20 @@
   "license": "MIT",
   "description": "Different walls for every display.",
   "kinds": [
-    "service"
+    "service",
+    "bar-widget"
   ],
+  "keepLoaded": true,
   "entryPoints": {
-    "service": "Omosaic.qml"
+    "service": "Omosaic.qml",
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Omosaic",
+    "description": "Choose wallpapers and colors for each display",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
   },
   "omarchy": {
     "clonedFrom": "omarchy.background"

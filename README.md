@@ -6,6 +6,7 @@ Omosaic is a multi-display wallpaper service for the Omarchy Quattro shell. It r
 
 ## Current features
 
+- Manage every connected display from an Omarchy bar widget.
 - Assign a different image to each connected display.
 - Browse backgrounds from every installed stock and user theme.
 - Assign solid colors, including custom hex colors.
@@ -23,10 +24,11 @@ Plugins run as unsandboxed code inside `omarchy-shell`. Review third-party plugi
 
 ## Use
 
-On the desktop of the display you want to change:
+Click the **Omosaic** icon in the Omarchy bar. Its panel lists every connected display with three actions:
 
-- **Double left-click** to browse wallpapers from all installed Omarchy themes.
-- **Double right-click** to choose a solid color.
+- **Wallpaper** browses backgrounds from all installed Omarchy themes.
+- **Solid color** offers presets and custom hex colors.
+- **Reset** returns that display to Omarchy's global background.
 
 Assignments are stored in:
 

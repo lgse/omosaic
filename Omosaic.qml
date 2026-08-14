@@ -64,16 +64,16 @@ Item {
     Style.scheduleRefresh()
   }
 
-  function chooseImage(screen) {
+  function chooseImageForKey(screenKey) {
     if (imagePicker.running) return
-    pickerScreenKey = keyForScreen(screen)
-    imagePicker.running = true
+    pickerScreenKey = String(screenKey || "").trim()
+    if (pickerScreenKey) imagePicker.running = true
   }
 
-  function chooseColor(screen) {
+  function chooseColorForKey(screenKey) {
     if (colorPicker.running) return
-    colorScreenKey = keyForScreen(screen)
-    colorPicker.running = true
+    colorScreenKey = String(screenKey || "").trim()
+    if (colorScreenKey) colorPicker.running = true
   }
 
   Process {
@@ -213,15 +213,6 @@ Item {
         mipmap: true
       }
 
-      MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onDoubleClicked: function(mouse) {
-          if (mouse.button === Qt.RightButton) root.chooseColor(panel.modelData)
-          else root.chooseImage(panel.modelData)
-          mouse.accepted = true
-        }
-      }
     }
   }
 }
