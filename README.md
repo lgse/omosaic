@@ -4,6 +4,8 @@
 
 Omosaic is a multi-display wallpaper service for the Omarchy Quattro shell. It replaces Omarchy's stock background renderer while preserving the standard `background` IPC target and global wallpaper fallback.
 
+![Omosaic panel showing wallpaper controls for three displays](preview.png)
+
 ## Current features
 
 - Manage every connected display from an Omarchy bar widget.
