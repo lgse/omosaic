@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "lgse.backdrop",
   "name": "Backdrop",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "author": "Pierre Berube",
   "license": "MIT",
   "description": "Different walls for every display.",

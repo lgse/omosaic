@@ -150,14 +150,22 @@ Item {
 
   Process {
     id: colorPicker
-    command: ["hyprpicker", "--format=hex", "--no-fancy", "--quiet"]
+    // Hyprpicker 0.4.7 produces no captured stdout when launched directly
+    // from Quickshell. Autocopy the result and print it back through a shell.
+    command: ["bash", "-lc", "hyprpicker --autocopy --format=hex --no-fancy --quiet >/dev/null && wl-paste --no-newline"]
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
-        var color = Model.normalizeColor(text)
+        var output = String(text || "")
+        var match = output.match(/#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?/)
+        var color = match ? Model.normalizeColor(match[0]) : ""
         var screenKey = root.colorPickerScreenKey
         root.colorPickerScreenKey = ""
-        if (color && screenKey) root.setColorForKey(screenKey, color)
+        if (color && screenKey) {
+          root.setColorForKey(screenKey, color)
+        } else {
+          console.warn("backdrop color picker returned no usable color:", output.trim())
+        }
       }
     }
   }

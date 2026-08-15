@@ -45,8 +45,28 @@ BarWidget {
   }
   readonly property var displayBounds: Model.layoutBounds(displayGeometries)
   property bool popupOpen: false
+  property string pendingColorPickerScreenKey: ""
 
   function close() { popupOpen = false }
+
+  function pickScreenColor(screenKey) {
+    pendingColorPickerScreenKey = String(screenKey || "")
+    popupOpen = false
+    colorPickerDelay.restart()
+  }
+
+  // Let the keyboard panel unmap before hyprpicker starts. Otherwise its
+  // overlay can keep the picker from receiving the selection click.
+  Timer {
+    id: colorPickerDelay
+    interval: 250
+    onTriggered: {
+      var screenKey = root.pendingColorPickerScreenKey
+      root.pendingColorPickerScreenKey = ""
+      if (screenKey && root.backdropService)
+        root.backdropService.pickColorForKey(screenKey)
+    }
+  }
 
   implicitWidth: barSize
   implicitHeight: barSize
@@ -350,14 +370,12 @@ BarWidget {
 
                   ActionButton {
                     id: pickColor
-                    width: Style.space(92)
-                    label: "Pick screen"
+                    width: Style.space(38)
+                    label: "󰃉"
                     fontFamily: root.bar.fontFamily
                     onActivated: {
                       displayCard.colorEditorOpen = false
-                      root.popupOpen = false
-                      if (root.backdropService)
-                        root.backdropService.pickColorForKey(displayCard.screenKey)
+                      root.pickScreenColor(displayCard.screenKey)
                     }
                   }
 
