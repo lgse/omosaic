@@ -68,7 +68,7 @@ BarWidget {
     onExited: if (root.bar) root.bar.hideTooltip(root)
   }
 
-  PopupCard {
+  KeyboardPanel {
     id: popup
     anchorItem: root
     bar: root.bar
@@ -142,9 +142,15 @@ BarWidget {
             }
 
             onColorEditorOpenChanged: {
-              if (colorEditorOpen)
-                hexInput.text = assignment && assignment.type === "color"
-                  ? assignment.color : "#"
+              if (!colorEditorOpen) return
+              hexInput.text = assignment && assignment.type === "color"
+                ? assignment.color : "#"
+              Qt.callLater(function() {
+                if (displayCard.colorEditorOpen) {
+                  hexInput.forceActiveFocus()
+                  hexInput.selectAll()
+                }
+              })
             }
 
             onGradientEditorOpenChanged: {
@@ -317,7 +323,7 @@ BarWidget {
                   spacing: Style.space(7)
 
                   Rectangle {
-                    width: parent.width - applyHex.width - parent.spacing
+                    width: parent.width - pickColor.width - applyHex.width - parent.spacing * 2
                     height: Style.space(30)
                     radius: Style.cornerRadius > 0 ? height / 4 : 0
                     color: Util.alpha(Color.foreground, 0.06)
@@ -339,6 +345,19 @@ BarWidget {
                       selectByMouse: true
                       maximumLength: 9
                       onAccepted: displayCard.applyHexColor()
+                    }
+                  }
+
+                  ActionButton {
+                    id: pickColor
+                    width: Style.space(92)
+                    label: "Pick screen"
+                    fontFamily: root.bar.fontFamily
+                    onActivated: {
+                      displayCard.colorEditorOpen = false
+                      root.popupOpen = false
+                      if (root.backdropService)
+                        root.backdropService.pickColorForKey(displayCard.screenKey)
                     }
                   }
 

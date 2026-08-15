@@ -12,7 +12,7 @@ Backdrop is a multi-display wallpaper service for the Omarchy Quattro shell. It 
 - Assign a different image to each connected display.
 - Browse backgrounds from every installed stock and user theme.
 - Pick custom image files outside the Omarchy theme library.
-- Assign solid colors, including custom hex colors.
+- Assign solid colors using presets, custom hex values, or an on-screen color picker.
 - Use any of the 382 uiGradients presets with a custom angle.
 - Remember displays by manufacturer, model, and serial number when available.
 - Fall back to the connector name and Omarchy's current global background.
@@ -32,7 +32,7 @@ Click the **Backdrop** icon in the Omarchy bar. Its panel lists every connected 
 
 - **Themes** browses backgrounds from all installed Omarchy themes.
 - **File** opens an isolated native GTK file picker with filesystem navigation and image previews.
-- **Solid color** offers presets and custom hex colors.
+- **Solid color** offers presets, custom hex colors, and a screen picker powered by `hyprpicker`.
 - **Gradient** provides an in-panel, scrollable gallery of all 382 uiGradients, common angle presets, and a custom-angle fallback.
 - **Reset** returns that display to Omarchy's global background.
 

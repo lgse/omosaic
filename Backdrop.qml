@@ -21,6 +21,7 @@ Item {
   property string defaultBackground: ""
   property string pickerScreenKey: ""
   property string filePickerScreenKey: ""
+  property string colorPickerScreenKey: ""
 
   function keysForScreen(screen) {
     return Model.screenKeys(screen.name, screen.manufacturer, screen.model, screen.serialNumber)
@@ -81,6 +82,12 @@ Item {
     return setAssignment(screenKey, { type: "color", color: color })
   }
 
+  function pickColorForKey(screenKey) {
+    if (colorPicker.running) return
+    colorPickerScreenKey = String(screenKey || "").trim()
+    if (colorPickerScreenKey) colorPicker.running = true
+  }
+
   function gradientByName(name) {
     return Gradients.byName(String(name || ""))
   }
@@ -139,6 +146,20 @@ Item {
       }
     }
     onRunningChanged: if (!running && filePickerScreenKey) filePickerScreenKey = ""
+  }
+
+  Process {
+    id: colorPicker
+    command: ["hyprpicker", "--format=hex", "--no-fancy", "--quiet"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var color = Model.normalizeColor(text)
+        var screenKey = root.colorPickerScreenKey
+        root.colorPickerScreenKey = ""
+        if (color && screenKey) root.setColorForKey(screenKey, color)
+      }
+    }
   }
 
   Process {

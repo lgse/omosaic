@@ -101,6 +101,8 @@ test("assignment lookup follows stable-to-fallback key order", () => {
 test("manifest replaces the stock background service", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"))
   assert.equal(manifest.schemaVersion, 1)
+  assert.equal(manifest.version, "0.2.0")
+  assert.equal(manifest.version, require("../package.json").version)
   assert.equal(manifest.omarchy.clonedFrom, "omarchy.background")
   assert.ok(manifest.kinds.includes("service"))
   assert.ok(manifest.kinds.includes("bar-widget"))
@@ -124,6 +126,8 @@ test("renderer preserves stock IPC and exposes per-screen methods", () => {
   assert.doesNotMatch(qml, /omarchy-menu-file/)
   assert.match(qml, /gradientPresets/)
   assert.match(qml, /GradientSurface/)
+  assert.match(qml, /command: \["hyprpicker", "--format=hex", "--no-fancy", "--quiet"\]/)
+  assert.match(qml, /pickColorForKey/)
   assert.doesNotMatch(qml, /onDoubleClicked/)
 })
 
@@ -142,6 +146,9 @@ test("bar widget exposes per-display wallpaper controls", () => {
   assert.match(qml, /colorPalette/)
   assert.match(qml, /setColorForKey/)
   assert.match(qml, /Model\.normalizeColor\(hexInput\.text\)/)
+  assert.match(qml, /KeyboardPanel \{/)
+  assert.match(qml, /hexInput\.forceActiveFocus\(\)/)
+  assert.match(qml, /pickColorForKey/)
   assert.match(qml, /hostWindow\.screen/)
   assert.match(qml, /\(current\)/)
   assert.match(qml, /text: "Display layout"/)
